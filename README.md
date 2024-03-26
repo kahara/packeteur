@@ -3,7 +3,6 @@
 Capture packets at remote spots and relay them to a single collector destination.
 Then, at the destination, combine streams of relayed packets from multiple sources
 into a single output for e.g. [tcpdump(1)'s](https://www.tcpdump.org/) consumption.
-Output can alternatively be relayed to *yet another* collector.
 
 Captured packets are relayed over [ZeroMQ](https://zeromq.org/), which allows us
 to keep things a bit more flexible compared to, idk, compressing the packets and
