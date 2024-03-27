@@ -12,4 +12,4 @@ FROM gcr.io/distroless/base-debian12 as production
 
 COPY --from=build /workdir/pcktr /
 
-CMD ["/pcktr"]
+ENTRYPOINT ["/pcktr"]
