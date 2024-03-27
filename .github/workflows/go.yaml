@@ -4,10 +4,10 @@ on: [push]
 
 env:
   REGISTRY: ghcr.io
-  PLATFORMS: amd64,arm64
+  PLATFORMS: amd64
 
 jobs:
-  test:
+  test-build-push:
     runs-on: ubuntu-22.04
     permissions:
       contents: read
