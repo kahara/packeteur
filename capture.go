@@ -1,11 +1,11 @@
 package main
 
 import (
-	pcap "github.com/packetcap/go-pcap"
+	"github.com/packetcap/go-pcap"
 	"github.com/rs/zerolog/log"
 )
 
-func capture(captureDevice string, captureFilter string) {
+func capture(captureDevice string, captureFilter string) chan pcap.Packet {
 
 	var (
 		err    error
@@ -18,7 +18,6 @@ func capture(captureDevice string, captureFilter string) {
 	if err = handle.SetBPFFilter(captureFilter); err != nil {
 		log.Err(err)
 	}
-	for packet := range handle.Listen() {
-		log.Debug().Any("info", packet.Info).Bytes("packet", packet.B).Msg("")
-	}
+
+	return handle.Listen()
 }

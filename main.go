@@ -8,8 +8,12 @@ import (
 func main() {
 	zerolog.TimeFieldFormat = time.RFC3339Nano
 
-	captureDevice := "enp5s0"
-	captureFilter := "udp port 53"
+	//log.Info().Msg("This is Packeteur")
 
-	capture(captureDevice, captureFilter)
+	var config = NewConfig()
+
+	setupMetrics(config.Relay, config.Collect)
+	go metrics(config.MetricsAddrport)
+
+	relay(capture(config.CaptureDevice, config.CaptureFilter))
 }
