@@ -9,10 +9,10 @@ import (
 
 type Config struct {
 	Mode            string // One of ("capture", "collect"); in the future there could be an additional "re-relay" mode, https://github.com/kahara/packeteur/issues/2
-	Device          string // Something like "eth0", "enp5s0"
-	Filter          string // For example, "udp port 53"
-	RelayEndpoint   string // Where to send packets to
-	CollectEndpoint string // Where to listen for packets
+	Device          string // Something like "eth0", "enp5s0"; for Mode "capture"
+	Filter          string // For example, "udp port 53"; for Mode "capture"
+	RelayEndpoint   string // Where to send packets to when Mode is "capture"
+	CollectEndpoint string // Where to listen for packets when Mode is "collect"
 	MetricsAddrport string // Exposed for Prometheus
 }
 

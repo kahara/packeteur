@@ -27,8 +27,24 @@ All settings go through environment variables:
 **Setting**|      **Default**       |**Notes**
 :-----:|:----------------------:|:-----:
 MODE|       `capture`        |Either `capture` or `collect`
-DEVICE|          `lo`          |Something like `eth0` or `enp5s0`
-FILTER|                        |For example `udp port 53`
-RELAY\_ENDPOINT| `tcp://localhost:7386` |Where to send packets to
-COLLECT\_ENDPOINT| `tcp://localhost:7386` |Where to listen for packets
-METRICS\_ADDRPORT|        `:9108`         |Exposed for Prometheus
+DEVICE|          `lo`          |Something like `eth0` or `enp5s0`; for MODE `capture`
+FILTER|                        |For example `udp port 53`; for MODE `capture`
+RELAY\_ENDPOINT| `tcp://localhost:7386` |Where to send packets to when MODE is `capture`
+COLLECT\_ENDPOINT| `tcp://localhost:7386` |Where to listen for packets when MODE is `collect`
+METRICS\_ADDRPORT|        `:9108`         |Exposed for Prometheus; see below
+
+## Metrics
+
+In addition to the [builtins](https://pkg.go.dev/github.com/prometheus/client_golang/prometheus#hdr-Metrics),
+the following Packeteur-specific ones are exposed:
+
+```
+packeteur_capture_bytes_bucket{address_family="IPv4",le="..."}  # Buckets are
+packeteur_capture_bytes_bucket{address_family="IPv6",le="..."}  # 2^6..2^16
+packeteur_capture_bytes_count{address_family="IPv4"}
+packeteur_capture_bytes_count{address_family="IPv6"}
+packeteur_capture_bytes_sum{address_family="IPv4"}
+packeteur_capture_bytes_sum{address_family="IPv6"}
+packeteur_capture_total{address_family="IPv4"}
+packeteur_capture_total{address_family="IPv6"}
+```
