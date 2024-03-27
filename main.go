@@ -8,12 +8,16 @@ import (
 func main() {
 	zerolog.TimeFieldFormat = time.RFC3339Nano
 
-	//log.Info().Msg("This is Packeteur")
-
 	var config = NewConfig()
 
-	setupMetrics(config.Relay, config.Collect)
+	setupMetrics(config.Mode)
 	go metrics(config.MetricsAddrport)
 
-	relay(capture(config.CaptureDevice, config.CaptureFilter))
+	if config.Mode == "capture" {
+		relay(capture(config.Device, config.Filter), config.RelayEndpoint)
+	} else if config.Mode == "collect" {
+		collect(config.CollectEndpoint)
+	} else {
+		panic("Not sure what went wrong, but we're done here.")
+	}
 }

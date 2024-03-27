@@ -1,6 +1,6 @@
 # packeteur
 
-Capture packets at remote spots and relay them to a single collector destination.
+**Capture** packets at remote spots and relay them to a single **collector** destination.
 Then, at the destination, combine streams of relayed packets from multiple sources
 into a single output for e.g. [tcpdump(1)'s](https://www.tcpdump.org/) consumption.
 
@@ -17,14 +17,18 @@ The following libraries kindly provide the core functionality on which Packeteur
 is able to build upon:
 
 * [packetcap/go-pcap](https://github.com/packetcap/go-pcap)
+* [google/gopacket](https://github.com/google/gopacket)
 * [pebbe/zmq4](https://github.com/pebbe/zmq4)
 
-## Usage
+## Configuration
 
-```console
-pcktr relay -device eth0 -filter 'udp port 53' -destination 10.0.1.2:7386
-```
+All settings go through environment variables:
 
-```console
-pcktr collect -address :7386  # running on 10.0.1.2; write  to stdout
-```
+**Setting**|      **Default**       |**Notes**
+:-----:|:----------------------:|:-----:
+MODE|       `capture`        |Either `capture` or `collect`
+DEVICE|          `lo`          |Something like `eth0` or `enp5s0`
+FILTER|                        |For example `udp port 53`
+RELAY\_ENDPOINT| `tcp://localhost:7386` |Where to send packets to
+COLLECT\_ENDPOINT| `tcp://localhost:7386` |Where to listen for packets
+METRICS\_ADDRPORT|        `:9108`         |Exposed for Prometheus
