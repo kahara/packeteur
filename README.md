@@ -22,7 +22,7 @@ is able to build upon:
 ## Usage
 
 ```console
-pcktr relay -interface eth0 -filter 'udp port 53' -destination 10.0.1.2:7386
+pcktr relay -device eth0 -filter 'udp port 53' -destination 10.0.1.2:7386
 ```
 
 ```console
