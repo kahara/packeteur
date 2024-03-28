@@ -24,7 +24,7 @@ func NewConfig() *Config {
 		"DEVICE":           "lo",
 		"FILTER":           "",
 		"RELAY_ENDPOINT":   "localhost:7386",
-		"COLLECT_ENDPOINT": "localhost:7386",
+		"COLLECT_ENDPOINT": ":7386",
 		"METRICS_ADDRPORT": ":9108"} {
 		value := os.Getenv(setting)
 		if value == "" {
