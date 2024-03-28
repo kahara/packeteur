@@ -33,6 +33,13 @@ func NewConfig() *Config {
 		reflections.SetField(&config, strcase.UpperCamelCase(setting), value)
 	}
 
+	if config.Mode == "capture" {
+		config.CollectEndpoint = ""
+	} else if config.Mode == "collect" {
+		config.Device = ""
+		config.RelayEndpoint = ""
+	}
+
 	log.Info().Any("config", config).Msg("")
 
 	return &config
