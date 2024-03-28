@@ -31,7 +31,7 @@ services:
       - 9108:9108  # Metrics
     environment:
       MODE: capture
-      DEVICE: lo
+      DEVICE: eth0
       FILTER: not udp port 7386
       RELAY_ENDPOINT: 'collector:7386'
 
