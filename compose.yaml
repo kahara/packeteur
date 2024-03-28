@@ -1,0 +1,39 @@
+version: '3.9'
+
+networks:
+  payload:
+  collector:
+
+services:
+  generator:
+    image: 'ghcr.io/instrumentisto/nmap:7.94-r4'
+    network_mode: service:capturer
+    entrypoint:
+      - /bin/sh
+      - -c
+      - 'nping --udp --dest-port 1666 --data-length 500 --count 0 --rate 10 127.0.0.1'
+
+  capturer:
+    build:
+      context: .
+    networks:
+      - payload
+      - collector
+    ports:
+      - 9108:9108  # Metrics
+    environment:
+      MODE: capture
+      DEVICE: eth0
+      FILTER: not udp port 7386
+      RELAY_ENDPOINT: 'collector:7386'
+
+  collector:
+    build:
+      context: .
+    networks:
+      - collector
+    # ports:
+    #   - 9108:9108  # Metrics
+    environment:
+      MODE: collect
+      COLLECT_ENDPOINT: ':7386'
