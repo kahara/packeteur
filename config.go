@@ -23,8 +23,8 @@ func NewConfig() *Config {
 		"MODE":             "capture",
 		"DEVICE":           "lo",
 		"FILTER":           "",
-		"RELAY_ENDPOINT":   "tcp://localhost:7386",
-		"COLLECT_ENDPOINT": "tcp://localhost:7386",
+		"RELAY_ENDPOINT":   "localhost:7386",
+		"COLLECT_ENDPOINT": "localhost:7386",
 		"METRICS_ADDRPORT": ":9108"} {
 		value := os.Getenv(setting)
 		if value == "" {

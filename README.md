@@ -1,12 +1,9 @@
 # packeteur
 
-**Capture** packets at remote spots and relay them to a single **collector** destination.
-Then, at the destination, combine streams of relayed packets from multiple sources
-into a single output for e.g. [tcpdump(1)'s](https://www.tcpdump.org/) consumption.
-
-Captured packets are relayed over [ZeroMQ](https://zeromq.org/), which allows us
-to keep things a bit more flexible compared to, idk, compressing the packets and
-relaying them encapsulated in UDP, for example.
+**Capture** packets at remote spots, compress and encapsulate them in UDP, and relay
+to a single **collector** destination. Then, at the destination, combine streams of
+relayed packets from multiple sources into a single output for e.g.
+[tcpdump(1)'s](https://www.tcpdump.org/) consumption.
 
 *I am aware of* [rpcapd(8)](https://www.tcpdump.org/manpages/rpcapd.8.html), but am
 atm pretty confused about the whole thing. For starters, where's the source and how
@@ -21,7 +18,6 @@ is able to build upon:
 * [google/gopacket](https://github.com/google/gopacket)
 * [seancfoley/ipaddress-go](github.com/seancfoley/ipaddress-go)
 * [prometheus/client_golang](https://github.com/prometheus/client_golang)
-* [pebbe/zmq4](https://github.com/pebbe/zmq4)
 
 ## Configuration
 

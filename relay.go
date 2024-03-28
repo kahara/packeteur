@@ -8,7 +8,10 @@ import (
 )
 
 func relay(packets <-chan pcap.Packet, endpoint string) {
-	var addressFamily = "undefined"
+	var (
+		//err           error
+		addressFamily = "undefined"
+	)
 
 	for packet := range packets {
 		p := gopacket.NewPacket(packet.B, layers.LayerTypeEthernet, gopacket.Default)
