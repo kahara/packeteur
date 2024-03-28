@@ -42,7 +42,7 @@ To capture:
 docker run --rm -it \
     -e MODE=capture\
     -e DEVICE=enp5s0 \
-    -e FILTER="udp port 53" \
+    -e FILTER="not udp port 7386" \
     -e RELAY_ENDPOINT=localhost:7386 \
     ghcr.io/kahara/packeteur:latest
 ```
