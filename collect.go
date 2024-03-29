@@ -15,6 +15,8 @@ func collect(endpoint string) {
 		source *net.UDPAddr
 	)
 
+	log.Info().Str("endpoint", endpoint).Msg("Packeteur is collecting")
+
 	if addr, err = net.ResolveUDPAddr("udp", endpoint); err != nil {
 		log.Err(err)
 	}

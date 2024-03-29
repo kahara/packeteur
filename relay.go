@@ -17,6 +17,8 @@ func relay(packets <-chan pcap.Packet, endpoint string) {
 		addressFamily = "undefined"
 	)
 
+	log.Info().Str("endpoint", endpoint).Msg("Packeteur is relaying")
+
 	if addr, err = net.ResolveUDPAddr("udp", endpoint); err != nil {
 		log.Err(err)
 	}
@@ -27,10 +29,11 @@ func relay(packets <-chan pcap.Packet, endpoint string) {
 	//defer conn.Close()
 
 	for packet := range packets {
+		log.Debug().Any("packet", packet).Msg("Processing incoming packet")
 		p := gopacket.NewPacket(packet.B, layers.LayerTypeEthernet, gopacket.Default)
-		log.Trace().Any("packet", p).Msg("Processing incoming packet")
-		if net := p.NetworkLayer(); net != nil {
-			_, dst := net.NetworkFlow().Endpoints()
+		if netLayer := p.NetworkLayer(); netLayer != nil {
+			log.Debug().Any("net", netLayer).Msg("Extract net layer")
+			_, dst := netLayer.NetworkFlow().Endpoints()
 			if addr, err := ipaddr.NewIPAddressFromBytes(dst.Raw()); err == nil {
 				if addr.IsIPv6() {
 					addressFamily = "IPv6"
