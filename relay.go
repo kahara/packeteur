@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/packetcap/go-pcap"
@@ -34,10 +35,14 @@ func relay(packets <-chan pcap.Packet, endpoint string) {
 		if netLayer := p.NetworkLayer(); netLayer != nil {
 			log.Debug().Any("net", netLayer).Msg("Extract net layer")
 			_, dst := netLayer.NetworkFlow().Endpoints()
-			if addr, err := ipaddr.NewIPAddressFromBytes(dst.Raw()); err == nil {
-				if addr.IsIPv6() {
+
+			if a, err := ipaddr.NewIPAddressFromBytes(dst.Raw()); err == nil {
+				if bytes.Compare(a.Bytes(), dst.Raw()) == 0 {
+					continue
+				}
+				if a.IsIPv6() {
 					addressFamily = "IPv6"
-				} else if addr.IsIPv4() {
+				} else if a.IsIPv4() {
 					addressFamily = "IPv4"
 				}
 			}

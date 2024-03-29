@@ -24,6 +24,8 @@ func collect(endpoint string) {
 		log.Err(err)
 	}
 
+	log.Info().Str("addr", addr.String()).Msg("Listening")
+
 	for {
 		if count, _, _, source, err = conn.ReadMsgUDP(buf, nil); err != nil {
 			log.Err(err)
