@@ -31,7 +31,7 @@ MODE|      `capture`      |Either `capture` or `collect`
 DEVICE|        `lo`         |Something like `eth0` or `enp5s0`; for MODE `capture`
 FILTER| `not udp port 7386` |For MODE `capture`; [BPF](https://en.wikipedia.org/wiki/Berkeley_Packet_Filter) syntax
 RELAY\_ENDPOINT|  `localhost:7386`   |Where to send packets to when MODE is `capture`
-COLLECT\_ENDPOINT|  `localhost:7386`   |Where to listen for packets when MODE is `collect`
+COLLECT\_ENDPOINT|  `:7386`   |Where to listen for packets when MODE is `collect`
 METRICS\_ADDRPORT|       `:9108`       |Exposed for Prometheus; see ["Metrics"](#metrics) below
 
 ## Running
@@ -52,7 +52,7 @@ To collect:
 ```console
 docker run --rm -it \
     -e MODE=collect \
-    -e COLLECT_ENDPOINT=localhost:7386 \
+    -e COLLECT_ENDPOINT=:7386 \
     ghcr.io/kahara/packeteur:latest
     #| tcpdump -r - -tttt -vvvv
 ```
