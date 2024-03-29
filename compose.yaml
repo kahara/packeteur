@@ -5,7 +5,7 @@ services:
   helper:
     build:
       dockerfile: Dockerfile_helper
-    network_mode: service:capturer
+    network_mode: service:collector
     command:
       - sleep
       - infinity
@@ -18,7 +18,7 @@ services:
     entrypoint:
       - /bin/sh
       - -c
-      - 'netcat -l -u 1666 >/dev/null && tcpdump -i any -tttt'
+      - 'netcat -l -u 1666 >/dev/null'
 
   sender:
     depends_on:
@@ -38,8 +38,8 @@ services:
       - payload
     ports:
       - 9108:9108  # Metrics
-    cap_add:
-      - CAP_NET_ADMIN
+    #cap_add:
+    #  - CAP_NET_ADMIN
     environment:
       MODE: capture
       DEVICE: eth0
