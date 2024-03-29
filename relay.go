@@ -30,7 +30,6 @@ func relay(packets <-chan pcap.Packet, endpoint string) {
 	//defer conn.Close()
 
 	for packet := range packets {
-		log.Debug().Any("packet", packet).Msg("Processing incoming packet")
 		p := gopacket.NewPacket(packet.B, layers.LayerTypeEthernet, gopacket.Default)
 		if netLayer := p.NetworkLayer(); netLayer != nil {
 			log.Debug().Any("net", netLayer).Msg("Extract net layer")
