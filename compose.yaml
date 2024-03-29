@@ -1,43 +1,56 @@
-version: '3.9'
+networks:
+  payload:
 
 services:
   helper:
-    image: ubuntu:20.04
+    build:
+      dockerfile: Dockerfile_helper
     network_mode: service:capturer
     command:
       - sleep
       - infinity
 
+  receiver:
+    build:
+      dockerfile: Dockerfile_receiver
+    networks:
+      - payload
+    entrypoint:
+      - /bin/sh
+      - -c
+      - 'netcat -l -u 1666 >/dev/null && tcpdump -i any -tttt'
+
   sender:
-    image: 'ghcr.io/instrumentisto/nmap:7.94-r4'
+    depends_on:
+      - receiver
+    build:
+      dockerfile: Dockerfile_sender
     network_mode: service:capturer
     entrypoint:
       - /bin/sh
       - -c  # 203.0.113.0/24 is TEST-NET-3
-      - 'nping --udp --dest-port 1666 --data-length 23 --count 0 --rate 3 receiver'
-
-  receiver:
-    build:
-      dockerfile: Dockerfile_receiver
-    entrypoint:
-      - /bin/sh
-      - -c
-      - 'netcat -l -u 1666 | hexdump -C'
+      - 'nping --udp --source-port random --dest-port 1666 --data-length 23 --count 0 --rate 1 receiver'
 
   capturer:
     build:
       context: .
+    networks:
+      - payload
     ports:
       - 9108:9108  # Metrics
+    cap_add:
+      - CAP_NET_ADMIN
     environment:
       MODE: capture
       DEVICE: eth0
-      FILTER: not udp port 7386
+      FILTER: #not udp port 7386
       RELAY_ENDPOINT: 'collector:7386'
 
   collector:
     build:
       context: .
+    networks:
+      - payload
     # ports:
     #   - 9108:9108  # Metrics
     environment:
