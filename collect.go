@@ -7,29 +7,37 @@ import (
 
 func collect(endpoint string) {
 	var (
-		err    error
-		addr   *net.UDPAddr
-		conn   *net.UDPConn
-		buf    []byte
-		count  int
-		source *net.UDPAddr
+		err     error
+		conn    net.PacketConn //*net.UDPConn
+		addr    net.Addr
+		count   int
+		packets = make(chan []byte, 1024)
 	)
 
 	log.Info().Str("endpoint", endpoint).Msg("Packeteur is collecting")
 
-	if addr, err = net.ResolveUDPAddr("udp", endpoint); err != nil {
-		log.Err(err)
-	}
-	if conn, err = net.ListenUDP("udp", addr); err != nil {
-		log.Err(err)
-	}
+	go func() {
+		log.Debug().Msg("Processor is processing")
+		for {
+			buf := make([]byte, 65536)
+			select {
+			case buf = <-packets:
+				log.Debug().Bytes("buf", buf).Msg("Processing packet")
+			}
+		}
+	}()
 
-	log.Info().Str("addr", addr.String()).Msg("Listening")
+	if conn, err = net.ListenPacket("udp", endpoint); err != nil {
+		log.Err(err)
+	}
 
 	for {
-		if count, _, _, source, err = conn.ReadMsgUDP(buf, nil); err != nil {
+		buf := make([]byte, 65536) // Consider if possible to recycle the buffer
+		if count, addr, err = conn.ReadFrom(buf); err != nil {
 			log.Err(err)
+			continue
 		}
-		log.Debug().Int("count", count).Any("source", source).Bytes("packet", buf).Msg("Packet received")
+		log.Debug().Int("count", count).Str("source", addr.String()).Bytes("packet", buf).Msg("Packet received")
+		packets <- buf[:count]
 	}
 }
