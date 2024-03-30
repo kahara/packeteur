@@ -30,7 +30,7 @@ func relay(packets <-chan pcap.Packet, endpoint string) {
 	for packet := range packets {
 		p := gopacket.NewPacket(packet.B, layers.LayerTypeEthernet, gopacket.Default)
 		if netLayer := p.NetworkLayer(); netLayer != nil {
-			_, dst := netLayer.NetworkFlow().Endpoints()
+			src, dst := netLayer.NetworkFlow().Endpoints()
 
 			// Skip own traffic
 			if endpointAddr.IP.String() == dst.String() { // Would like to compare []bytes
@@ -38,6 +38,7 @@ func relay(packets <-chan pcap.Packet, endpoint string) {
 			}
 
 			// Send the packet
+			log.Debug().Str("source", src.String()).Str("destination", dst.String()).Msg("Sending")
 			if count, _, err = conn.WriteMsgUDP(packet.B, nil, nil); err != nil {
 				log.Err(err).Msg("")
 			} else {
