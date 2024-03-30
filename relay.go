@@ -32,11 +32,9 @@ func relay(packets <-chan pcap.Packet, endpoint string) {
 	for packet := range packets {
 		p := gopacket.NewPacket(packet.B, layers.LayerTypeEthernet, gopacket.Default)
 		if netLayer := p.NetworkLayer(); netLayer != nil {
-			log.Debug().Any("net", netLayer).Msg("Extract net layer")
 			_, dst := netLayer.NetworkFlow().Endpoints()
-
 			if a, err := ipaddr.NewIPAddressFromBytes(dst.Raw()); err == nil {
-				if bytes.Compare(a.Bytes(), dst.Raw()) == 0 {
+				if bytes.Compare(addr.IP, dst.Raw()) == 0 {
 					continue
 				}
 				if a.IsIPv6() {
@@ -49,10 +47,9 @@ func relay(packets <-chan pcap.Packet, endpoint string) {
 			// Send the packet
 			if _, _, err = conn.WriteMsgUDP(packet.B, nil, nil); err != nil {
 				log.Err(err)
+			} else {
+				log.Debug().Str("destination", dst.String()).Int("length", len(packet.B)).Msg("Sent to collector")
 			}
-			//if _, err = conn.Write(packet.B); err != nil {
-			//	log.Err(err)
-			//}
 
 			// Record our beloved metrics
 			captured_total_metric.WithLabelValues(addressFamily).Inc()

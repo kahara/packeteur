@@ -37,7 +37,7 @@ func collect(endpoint string) {
 			log.Err(err)
 			continue
 		}
-		log.Debug().Int("count", count).Str("source", addr.String()).Bytes("packet", buf).Msg("Packet received")
+		log.Debug().Int("length", count).Str("source", addr.String()).Msg("Packet received")
 		packets <- buf[:count]
 	}
 }

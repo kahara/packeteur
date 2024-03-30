@@ -13,8 +13,7 @@ services:
   receiver:
     build:
       dockerfile: Dockerfile_receiver
-    networks:
-      - payload
+    network_mode: service:capturer
     entrypoint:
       - /bin/sh
       - -c
@@ -25,7 +24,8 @@ services:
       - receiver
     build:
       dockerfile: Dockerfile_sender
-    network_mode: service:capturer
+    networks:
+      - payload
     entrypoint:
       - /bin/sh
       - -c  # 203.0.113.0/24 is TEST-NET-3
@@ -38,8 +38,6 @@ services:
       - payload
     ports:
       - 9108:9108  # Metrics
-    #cap_add:
-    #  - CAP_NET_ADMIN
     environment:
       MODE: capture
       DEVICE: eth0
