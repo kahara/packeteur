@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
 	"github.com/packetcap/go-pcap"
@@ -16,25 +15,26 @@ func relay(packets <-chan pcap.Packet, endpoint string) {
 		addr          *net.UDPAddr
 		conn          *net.UDPConn
 		addressFamily = "undefined"
+		count         int
 	)
 
 	log.Info().Str("endpoint", endpoint).Msg("Packeteur is relaying")
 
 	if addr, err = net.ResolveUDPAddr("udp", endpoint); err != nil {
-		log.Err(err)
+		log.Err(err).Msg("")
 	}
 
 	if conn, err = net.DialUDP("udp", nil, addr); err != nil {
-		log.Err(err)
+		log.Err(err).Msg("")
 	}
-	//defer conn.Close()
 
 	for packet := range packets {
 		p := gopacket.NewPacket(packet.B, layers.LayerTypeEthernet, gopacket.Default)
 		if netLayer := p.NetworkLayer(); netLayer != nil {
 			_, dst := netLayer.NetworkFlow().Endpoints()
 			if a, err := ipaddr.NewIPAddressFromBytes(dst.Raw()); err == nil {
-				if bytes.Compare(addr.IP, dst.Raw()) == 0 {
+				// Skip own traffic
+				if addr.IP.String() == dst.String() { // Would like to compare []bytes
 					continue
 				}
 				if a.IsIPv6() {
@@ -45,10 +45,10 @@ func relay(packets <-chan pcap.Packet, endpoint string) {
 			}
 
 			// Send the packet
-			if _, _, err = conn.WriteMsgUDP(packet.B, nil, nil); err != nil {
-				log.Err(err)
+			if count, _, err = conn.WriteMsgUDP(packet.B, nil, nil); err != nil {
+				log.Err(err).Msg("")
 			} else {
-				log.Debug().Str("destination", dst.String()).Int("length", len(packet.B)).Msg("Sent to collector")
+				log.Debug().Str("destination", dst.String()).Int("length", count).Msg("Sent to collector")
 			}
 
 			// Record our beloved metrics
