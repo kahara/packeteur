@@ -1,11 +1,8 @@
-networks:
-  payload:
-
 services:
   helper:
     build:
       dockerfile: Dockerfile_helper
-    network_mode: service:collector
+    network_mode: host
     command:
       - sleep
       - infinity
@@ -13,44 +10,41 @@ services:
   receiver:
     build:
       dockerfile: Dockerfile_receiver
-    network_mode: service:capturer
+    network_mode: host
     entrypoint:
       - /bin/sh
       - -c
-      - 'netcat -l -u 1666 >/dev/null'
+      - 'netcat -v -l -u 1666 >/dev/null'
 
   sender:
     depends_on:
       - receiver
     build:
       dockerfile: Dockerfile_sender
-    networks:
-      - payload
+    network_mode: host
     entrypoint:
       - /bin/sh
       - -c  # 203.0.113.0/24 is TEST-NET-3
-      - 'nping --udp --source-port random --dest-port 1666 --data-length 23 --count 0 --rate 1 receiver'
+      - 'nping --udp --source-port random --dest-port 1666 --data-length 23 --count 0 --rate 1 localhost'
 
   capturer:
     build:
       context: .
-    networks:
-      - payload
-    ports:
-      - 9108:9108  # Metrics
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
     environment:
       MODE: capture
-      DEVICE: eth0
+      DEVICE: lo
       FILTER: #not udp port 7386
-      RELAY_ENDPOINT: 'collector:7386'
+      RELAY_ENDPOINT: '127.0.0.2:7386'
+      METRICS_ADDRPORT: ':9109'
 
   collector:
     build:
       context: .
-    networks:
-      - payload
-    # ports:
-    #   - 9108:9108  # Metrics
+    network_mode: host
     environment:
       MODE: collect
-      COLLECT_ENDPOINT: ':7386'
+      COLLECT_ENDPOINT: '127.0.0.2:7386'
+      METRICS_ADDRPORT: ':9110'
