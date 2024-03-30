@@ -22,19 +22,19 @@ func collect(endpoint string) {
 			buf := make([]byte, 65536)
 			select {
 			case buf = <-packets:
-				log.Debug().Bytes("buf", buf).Msg("Processing packet")
+				log.Debug().Int("length", len(buf)).Msg("Processing packet")
 			}
 		}
 	}()
 
 	if conn, err = net.ListenPacket("udp", endpoint); err != nil {
-		log.Err(err)
+		log.Err(err).Msg("")
 	}
 
 	for {
 		buf := make([]byte, 65536) // Consider if possible to recycle the buffer
 		if count, addr, err = conn.ReadFrom(buf); err != nil {
-			log.Err(err)
+			log.Err(err).Msg("")
 			continue
 		}
 		log.Debug().Int("length", count).Str("source", addr.String()).Msg("Packet received")
