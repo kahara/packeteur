@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
-	"github.com/rs/zerolog/log"
 	"math/rand"
 )
 
@@ -16,7 +15,7 @@ func toss() bool {
 
 // https://pkg.go.dev/github.com/google/gopacket#hdr-Creating_Packet_Data
 
-func generateTestPacket() []byte {
+func generateTestPacket() gopacket.SerializeBuffer {
 	var (
 		buf  = gopacket.NewSerializeBuffer()
 		opts = gopacket.SerializeOptions{}
@@ -71,7 +70,5 @@ func generateTestPacket() []byte {
 		},
 		gopacket.Payload([]byte{73, 86}))
 
-	log.Debug().Any("buf", buf).Msg("")
-
-	return buf.Bytes()
+	return buf
 }
