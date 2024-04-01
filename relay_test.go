@@ -11,11 +11,12 @@ import (
 const (
 	RelayTestEndpoint    = "localhost:17386"
 	RelayTestPacketCount = 10
+	RelayTestFilename    = "/tmp/packeteur-test-relay.pcap"
 )
 
 func TestRelay(t *testing.T) {
 	var (
-		outgoing = make(chan pcap.Packet)
+		outgoing = make(chan pcap.Packet, 1024)
 		seen     = make(map[uint64]bool)
 		incoming = make(chan []byte, 1024)
 	)
@@ -36,7 +37,8 @@ func TestRelay(t *testing.T) {
 
 	log.Debug().Any("seen", seen).Msg("Packets seen so far")
 
-	for incomingPacket := range incoming {
-		log.Debug().Bytes("packet", incomingPacket).Msg("Received packet from collector")
-	}
+	//readPackets(RelayTestFilename, incoming)
+	//for incomingPacket := range incoming {
+	//	log.Debug().Bytes("packet", incomingPacket).Msg("Received packet from collector")
+	//}
 }

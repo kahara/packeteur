@@ -51,7 +51,7 @@ All settings go through environment variables:
 :-----:|:-------------------:|:-----:
 MODE|      `capture`      |Either `capture` or `collect`
 DEVICE|        `lo`         |Something like `eth0` or `enp5s0`; for MODE `capture`
-FILTER| `not udp port 7386` |For MODE `capture`; [BPF](https://en.wikipedia.org/wiki/Berkeley_Packet_Filter) syntax
+FILTER| `` |For MODE `capture`; [BPF](https://en.wikipedia.org/wiki/Berkeley_Packet_Filter) syntax
 RELAY\_ENDPOINT|  `localhost:7386`   |Where to send packets to when MODE is `capture`
 COLLECT\_ENDPOINT|  `:7386`   |Where to listen for packets when MODE is `collect`
 METRICS\_ADDRPORT|       `:9108`       |Exposed for Prometheus; see ["Metrics"](#metrics) below
@@ -64,7 +64,7 @@ To capture:
 docker run --rm -it \
     -e MODE=capture\
     -e DEVICE=enp5s0 \
-    -e FILTER="not udp port 7386" \
+    -e FILTER="" \
     -e RELAY_ENDPOINT=localhost:7386 \
     ghcr.io/kahara/packeteur:latest
 ```
@@ -82,7 +82,7 @@ docker run --rm -it \
 ## Metrics
 
 In addition to the [builtins](https://pkg.go.dev/github.com/prometheus/client_golang/prometheus#hdr-Metrics),
-the following Packeteur-specific ones are exposed:
+the following Packeteur-specific ones are exposed (for relayer, collector):
 
 ```
 packeteur_relay_bytes_bucket{address_family="IPv4",le="..."}  # Buckets are
