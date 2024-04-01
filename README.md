@@ -1,6 +1,28 @@
 # packeteur
 
-**Capture** packets at remote spots, compress and encapsulate them in UDP, and relay
+```mermaid
+  graph LR;
+      nic-a[NIC #1];
+      nic-b[NIC #2];
+      capturer-a(Capturer);
+      capturer-b(Capturer);
+      relayer-a(Relayer);
+      relayer-b(Relayer);
+      net((The Net™));
+      collector(Collector);
+      analyzer(Analyzer);
+
+      nic-a--raw packets-->capturer-a;
+      nic-b--raw packets-->capturer-b;
+      capturer-a--raw packets-->relayer-a;
+      capturer-b--raw packets-->relayer-b;
+      relayer-a--UDP-packeteured-->net;
+      relayer-b--UDP-packeteured-->net;
+      net--UDP-packeteured-->collector;
+      collector--raw packets-->analyzer;
+```
+
+**Capture** packets at remote spots, compress and encapsulate them in UDP, and **relay**
 to a single **collector** destination. Then, at the destination, combine streams of
 relayed packets from multiple sources into a single output for e.g.
 [tcpdump(1)'s](https://www.tcpdump.org/) consumption. No half-baked attempt at keeping

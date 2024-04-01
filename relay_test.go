@@ -34,6 +34,8 @@ func TestRelay(t *testing.T) {
 		}
 	}
 
+	log.Debug().Any("seen", seen).Msg("Packets seen so far")
+
 	for incomingPacket := range incoming {
 		log.Debug().Bytes("packet", incomingPacket).Msg("Received packet from collector")
 	}
