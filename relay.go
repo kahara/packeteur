@@ -28,7 +28,7 @@ func relay(packets <-chan pcap.Packet, endpoint string) {
 
 	for packet := range packets {
 		p := gopacket.NewPacket(packet.B, layers.LayerTypeEthernet, gopacket.Default)
-		log.Debug().Str("packet", p.String()).Msg("Received packet")
+		log.Debug().Str("packet", p.String()).Msg("Captured packet received")
 
 		// Skip own traffic
 		addressFamily := "undefined"
@@ -57,7 +57,11 @@ func relay(packets <-chan pcap.Packet, endpoint string) {
 		}
 
 		// Record our beloved metrics
-		relayed_total_metric.WithLabelValues(addressFamily).Inc()
-		relayed_bytes_metric.WithLabelValues(addressFamily).Observe(float64(len(packet.B)))
+		if relayed_total_metric != nil {
+			relayed_total_metric.WithLabelValues(addressFamily).Inc()
+		}
+		if relayed_bytes_metric != nil {
+			relayed_bytes_metric.WithLabelValues(addressFamily).Observe(float64(len(packet.B)))
+		}
 	}
 }

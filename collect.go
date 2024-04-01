@@ -39,7 +39,7 @@ func collect(endpoint string, packets chan []byte) {
 			log.Err(err).Msg("")
 			continue
 		}
-		log.Debug().Int("length", count).Str("source", addr.String()).Msg("Packet received")
+		log.Debug().Int("length", count).Str("source", addr.String()).Msg("Relayed packet received")
 		packets <- buf[:count]
 	}
 }
