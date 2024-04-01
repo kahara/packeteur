@@ -5,30 +5,32 @@ import (
 	"net"
 )
 
-func collect(endpoint string) {
+func collect(endpoint string, packets chan []byte) {
 	var (
-		err     error
-		conn    net.PacketConn //*net.UDPConn
-		addr    net.Addr
-		count   int
-		packets = make(chan []byte, 1024)
+		err   error
+		conn  net.PacketConn //*net.UDPConn
+		addr  net.Addr
+		count int
 	)
 
 	log.Info().Str("endpoint", endpoint).Msg("Packeteur is collecting")
 
-	go func() {
-		log.Debug().Msg("Processor is processing")
-		for {
-			buf := make([]byte, 65536)
-			select {
-			case buf = <-packets:
-				log.Debug().Int("length", len(buf)).Msg("Processing packet")
+	if packets == nil {
+		packets = make(chan []byte, 1024)
+		go func() {
+			log.Debug().Msg("Processor is processing")
+			for {
+				buf := make([]byte, 65536)
+				select {
+				case buf = <-packets:
+					log.Debug().Int("length", len(buf)).Msg("Processing packet")
+				}
 			}
-		}
-	}()
+		}()
+	}
 
 	if conn, err = net.ListenPacket("udp", endpoint); err != nil {
-		log.Err(err).Msg("")
+		log.Err(err).Any("addr", addr).Msg("Something went wrong while attempting to listen")
 	}
 
 	for {

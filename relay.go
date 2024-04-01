@@ -29,8 +29,11 @@ func relay(packets <-chan pcap.Packet, endpoint string) {
 
 	for packet := range packets {
 		p := gopacket.NewPacket(packet.B, layers.LayerTypeEthernet, gopacket.Default)
+		log.Debug().Any("packet", p).Msg("Received packet")
 		if netLayer := p.NetworkLayer(); netLayer != nil {
 			src, dst := netLayer.NetworkFlow().Endpoints()
+
+			log.Debug().Any("src", src.String()).Any("dst", dst.String()).Msg("net layer")
 
 			// Skip own traffic
 			if endpointAddr.IP.String() == dst.String() { // Would like to compare []bytes (also ports)
@@ -38,11 +41,11 @@ func relay(packets <-chan pcap.Packet, endpoint string) {
 			}
 
 			// Send the packet
-			log.Debug().Str("source", src.String()).Str("destination", dst.String()).Msg("Sending")
 			if count, _, err = conn.WriteMsgUDP(packet.B, nil, nil); err != nil {
-				log.Err(err).Msg("")
+				log.Err(err).Msg("Something went wrong while sending packet to collector")
+				continue
 			} else {
-				log.Debug().Str("destination", dst.String()).Int("length", count).Msg("Sent to collector")
+				log.Debug().Str("source", src.String()).Str("destination", dst.String()).Int("length", count).Msg("Sent to collector")
 			}
 
 			// Record our beloved metrics
@@ -56,6 +59,8 @@ func relay(packets <-chan pcap.Packet, endpoint string) {
 			}
 			captured_total_metric.WithLabelValues(addressFamily).Inc()
 			captured_bytes_metric.WithLabelValues(addressFamily).Observe(float64(len(packet.B)))
+		} else {
+			log.Debug().Msg("no net layer to be seen here")
 		}
 	}
 }

@@ -16,7 +16,7 @@ func main() {
 	if config.Mode == "capture" {
 		relay(capture(config.Device, config.Filter), config.RelayEndpoint)
 	} else if config.Mode == "collect" {
-		collect(config.CollectEndpoint)
+		collect(config.CollectEndpoint, nil)
 	} else {
 		panic("Not sure what went wrong, but we're done here.")
 	}
