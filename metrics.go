@@ -13,37 +13,38 @@ const (
 )
 
 var (
-	captured_total_metric  *prometheus.CounterVec
-	captured_bytes_metric  *prometheus.HistogramVec
 	relayed_total_metric   *prometheus.CounterVec
+	relayed_bytes_metric   *prometheus.HistogramVec
 	collected_total_metric *prometheus.CounterVec
+	collected_bytes_metric *prometheus.HistogramVec
 )
 
 func setupMetrics(mode string) {
 	switch mode {
 	case "capture":
-		captured_total_metric = promauto.NewCounterVec(prometheus.CounterOpts{
-			Namespace: Namespace,
-			Subsystem: "capture",
-			Name:      "total",
-		}, []string{"address_family"})
-		captured_bytes_metric = promauto.NewHistogramVec(prometheus.HistogramOpts{
-			Namespace: Namespace,
-			Subsystem: "capture",
-			Name:      "bytes",
-			Buckets:   []float64{64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536},
-		}, []string{"address_family"})
 		relayed_total_metric = promauto.NewCounterVec(prometheus.CounterOpts{
 			Namespace: Namespace,
 			Subsystem: "relay",
 			Name:      "total",
-		}, []string{})
+		}, []string{"address_family"})
+		relayed_bytes_metric = promauto.NewHistogramVec(prometheus.HistogramOpts{
+			Namespace: Namespace,
+			Subsystem: "relay",
+			Name:      "bytes",
+			Buckets:   []float64{64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536},
+		}, []string{"address_family"})
 	case "collect":
 		collected_total_metric = promauto.NewCounterVec(prometheus.CounterOpts{
 			Namespace: Namespace,
 			Subsystem: "collect",
 			Name:      "total",
 		}, []string{})
+		collected_bytes_metric = promauto.NewHistogramVec(prometheus.HistogramOpts{
+			Namespace: Namespace,
+			Subsystem: "collect",
+			Name:      "bytes",
+			Buckets:   []float64{64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536},
+		}, []string{"address_family"})
 	default:
 		panic("Not sure what went wrong, but we're done here.")
 	}

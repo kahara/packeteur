@@ -15,7 +15,6 @@ func relay(packets <-chan pcap.Packet, endpoint string) {
 		endpointAddr *net.UDPAddr
 		conn         *net.UDPConn
 		dstAddr      *ipaddr.IPAddress
-		count        int
 	)
 
 	log.Info().Str("endpoint", endpoint).Msg("Packeteur is relaying")
@@ -29,27 +28,14 @@ func relay(packets <-chan pcap.Packet, endpoint string) {
 
 	for packet := range packets {
 		p := gopacket.NewPacket(packet.B, layers.LayerTypeEthernet, gopacket.Default)
-		log.Debug().Any("packet", p).Msg("Received packet")
+		log.Debug().Str("packet", p.String()).Msg("Received packet")
+
+		// Skip own traffic
+		addressFamily := "undefined"
 		if netLayer := p.NetworkLayer(); netLayer != nil {
-			src, dst := netLayer.NetworkFlow().Endpoints()
+			_, dst := netLayer.NetworkFlow().Endpoints()
 
-			log.Debug().Any("src", src.String()).Any("dst", dst.String()).Msg("net layer")
-
-			// Skip own traffic
-			if endpointAddr.IP.String() == dst.String() { // Would like to compare []bytes (also ports)
-				continue
-			}
-
-			// Send the packet
-			if count, _, err = conn.WriteMsgUDP(packet.B, nil, nil); err != nil {
-				log.Err(err).Msg("Something went wrong while sending packet to collector")
-				continue
-			} else {
-				log.Debug().Str("source", src.String()).Str("destination", dst.String()).Int("length", count).Msg("Sent to collector")
-			}
-
-			// Record our beloved metrics
-			addressFamily := "undefined"
+			// Take note of address family while on it
 			if dstAddr, err = ipaddr.NewIPAddressFromBytes(dst.Raw()); err == nil {
 				if dstAddr.IsIPv6() {
 					addressFamily = "IPv6"
@@ -57,10 +43,21 @@ func relay(packets <-chan pcap.Packet, endpoint string) {
 					addressFamily = "IPv4"
 				}
 			}
-			captured_total_metric.WithLabelValues(addressFamily).Inc()
-			captured_bytes_metric.WithLabelValues(addressFamily).Observe(float64(len(packet.B)))
-		} else {
-			log.Debug().Msg("no net layer to be seen here")
+
+			// This should compare []bytes and also ports
+			if endpointAddr.IP.String() == dst.String() {
+				continue
+			}
 		}
+
+		// Send the packet
+		if _, _, err = conn.WriteMsgUDP(packet.B, nil, nil); err != nil {
+			log.Err(err).Msg("Something went wrong while sending packet to collector")
+			continue
+		}
+
+		// Record our beloved metrics
+		relayed_total_metric.WithLabelValues(addressFamily).Inc()
+		relayed_bytes_metric.WithLabelValues(addressFamily).Observe(float64(len(packet.B)))
 	}
 }

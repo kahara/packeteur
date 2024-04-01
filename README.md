@@ -63,14 +63,22 @@ In addition to the [builtins](https://pkg.go.dev/github.com/prometheus/client_go
 the following Packeteur-specific ones are exposed:
 
 ```
-packeteur_capture_bytes_bucket{address_family="IPv4",le="..."}  # Buckets are
-packeteur_capture_bytes_bucket{address_family="IPv6",le="..."}  # 2^6..2^16
-packeteur_capture_bytes_count{address_family="IPv4"}
-packeteur_capture_bytes_count{address_family="IPv6"}
-packeteur_capture_bytes_sum{address_family="IPv4"}
-packeteur_capture_bytes_sum{address_family="IPv6"}
-packeteur_capture_total{address_family="IPv4"}
-packeteur_capture_total{address_family="IPv6"}
+packeteur_relay_bytes_bucket{address_family="IPv4",le="..."}  # Buckets are
+packeteur_relay_bytes_bucket{address_family="IPv6",le="..."}  # 2^6..2^16
+packeteur_relay_bytes_count{address_family="IPv4"}
+packeteur_relay_bytes_count{address_family="IPv6"}
+packeteur_relay_bytes_sum{address_family="IPv4"}
+packeteur_relay_bytes_sum{address_family="IPv6"}
+packeteur_relay_total{address_family="IPv4"}
+packeteur_relay_total{address_family="IPv6"}
+packeteur_collect_bytes_bucket{address_family="IPv4",le="..."}
+packeteur_collect_bytes_bucket{address_family="IPv6",le="..."}
+packeteur_collect_bytes_count{address_family="IPv4"}
+packeteur_collect_bytes_count{address_family="IPv6"}
+packeteur_collect_bytes_sum{address_family="IPv4"}
+packeteur_collect_bytes_sum{address_family="IPv6"}
+packeteur_collect_total{address_family="IPv4"}
+packeteur_collect_total{address_family="IPv6"}
 ```
 
 ## End-to-end testing
