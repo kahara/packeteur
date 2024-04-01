@@ -33,7 +33,7 @@ func relay(packets <-chan pcap.Packet, endpoint string) {
 			src, dst := netLayer.NetworkFlow().Endpoints()
 
 			// Skip own traffic
-			if endpointAddr.IP.String() == dst.String() { // Would like to compare []bytes
+			if endpointAddr.IP.String() == dst.String() { // Would like to compare []bytes (also ports)
 				continue
 			}
 
