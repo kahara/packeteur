@@ -6,11 +6,8 @@ import (
 	"math/rand"
 )
 
-func toss() bool {
-	if rand.Float64() < 0.5 {
-		return false
-	}
-	return true
+func toss(x ...func() []gopacket.SerializableLayer) []gopacket.SerializableLayer {
+	return x[rand.Intn(len(x))]()
 }
 
 // https://pkg.go.dev/github.com/google/gopacket#hdr-Creating_Packet_Data
@@ -21,11 +18,7 @@ func generateRandomPacket() gopacket.SerializeBuffer {
 		opts = gopacket.SerializeOptions{}
 	)
 
-	_ = gopacket.SerializeLayers(buf, opts,
-		generateRandomEthernet(),
-		generateRandomIPv4(),
-		generateRandomTCP(),
-		generateRandomPayload())
+	_ = gopacket.SerializeLayers(buf, opts, generateRandomEthernetLayer()...)
 
 	return buf
 }
@@ -36,20 +29,26 @@ func generateRandomPayload() gopacket.Payload {
 	return payload
 }
 
-func generateRandomEthernet() *layers.Ethernet {
-	var ethernet = layers.Ethernet{
+func generateRandomEthernetLayer() []gopacket.SerializableLayer {
+	var l []gopacket.SerializableLayer
+
+	l = append(l, &layers.Ethernet{
 		BaseLayer:    layers.BaseLayer{},
 		SrcMAC:       nil,
 		DstMAC:       layers.EthernetBroadcast,
 		EthernetType: 0,
 		Length:       0,
-	}
+	})
 
-	return &ethernet
+	l = append(l, toss(generateRandomIPv4Layer, generateRandomIPv6Layer)...)
+
+	return l
 }
 
-func generateRandomIPv4() *layers.IPv4 {
-	var ipv4 = layers.IPv4{
+func generateRandomIPv4Layer() []gopacket.SerializableLayer {
+	var l []gopacket.SerializableLayer
+
+	l = append(l, &layers.IPv4{
 		BaseLayer:  layers.BaseLayer{},
 		Version:    0,
 		IHL:        0,
@@ -65,13 +64,17 @@ func generateRandomIPv4() *layers.IPv4 {
 		DstIP:      nil,
 		Options:    nil,
 		Padding:    nil,
-	}
+	})
 
-	return &ipv4
+	l = append(l, toss(generateRandomICMPv4Layer, generateRandomUDPLayer, generateRandomTCPLayer)...)
+
+	return l
 }
 
-func generateRandomIPv6() *layers.IPv6 {
-	var ipv6 = layers.IPv6{
+func generateRandomIPv6Layer() []gopacket.SerializableLayer {
+	var l []gopacket.SerializableLayer
+
+	l = append(l, &layers.IPv6{
 		BaseLayer:    layers.BaseLayer{},
 		Version:      0,
 		TrafficClass: 0,
@@ -82,48 +85,58 @@ func generateRandomIPv6() *layers.IPv6 {
 		SrcIP:        nil,
 		DstIP:        nil,
 		HopByHop:     nil,
-	}
+	})
 
-	return &ipv6
+	l = append(l, toss(generateRandomICMPv6Layer, generateRandomUDPLayer, generateRandomTCPLayer)...)
+
+	return l
 }
 
-func generateRandomICMPv4() *layers.ICMPv4 {
-	var icmpv4 = layers.ICMPv4{
+func generateRandomICMPv4Layer() []gopacket.SerializableLayer {
+	var l []gopacket.SerializableLayer
+
+	l = append(l, &layers.ICMPv4{
 		BaseLayer: layers.BaseLayer{},
 		TypeCode:  0,
 		Checksum:  0,
 		Id:        0,
 		Seq:       0,
-	}
+	})
 
-	return &icmpv4
+	return l
 }
 
-func generateRandomICMPv6() *layers.ICMPv6 {
-	var icmpv6 = layers.ICMPv6{
+func generateRandomICMPv6Layer() []gopacket.SerializableLayer {
+	var l []gopacket.SerializableLayer
+
+	l = append(l, &layers.ICMPv6{
 		BaseLayer: layers.BaseLayer{},
 		TypeCode:  0,
 		Checksum:  0,
 		TypeBytes: nil,
-	}
+	})
 
-	return &icmpv6
+	return l
 }
 
-func generateRandomUDP() *layers.UDP {
-	var udp = layers.UDP{
+func generateRandomUDPLayer() []gopacket.SerializableLayer {
+	var l []gopacket.SerializableLayer
+
+	l = append(l, &layers.UDP{
 		BaseLayer: layers.BaseLayer{},
 		SrcPort:   0,
 		DstPort:   0,
 		Length:    0,
 		Checksum:  0,
-	}
+	})
 
-	return &udp
+	return l
 }
 
-func generateRandomTCP() *layers.TCP {
-	var tcp = layers.TCP{
+func generateRandomTCPLayer() []gopacket.SerializableLayer {
+	var l []gopacket.SerializableLayer
+
+	l = append(l, &layers.TCP{
 		BaseLayer:  layers.BaseLayer{},
 		SrcPort:    0,
 		DstPort:    0,
@@ -144,7 +157,7 @@ func generateRandomTCP() *layers.TCP {
 		Urgent:     0,
 		Options:    nil,
 		Padding:    nil,
-	}
+	})
 
-	return &tcp
+	return l
 }
