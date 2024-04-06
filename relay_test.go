@@ -10,7 +10,7 @@ import (
 
 const (
 	RelayTestEndpoint    = "localhost:17386"
-	RelayTestPacketCount = 10
+	RelayTestPacketCount = 100
 	RelayTestFilename    = "/tmp/packeteur-test-relay.pcap"
 )
 
