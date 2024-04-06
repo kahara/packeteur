@@ -25,7 +25,7 @@ func TestRelay(t *testing.T) {
 	go collect(RelayTestEndpoint, incoming)
 
 	for i := 0; i < RelayTestPacketCount; i++ {
-		outgoingPacket := generateTestPacket()
+		outgoingPacket := generateRandomPacket()
 		seen[xxhash.Sum64(outgoingPacket.Bytes())] = true
 		log.Debug().Bytes("packet", outgoingPacket.Bytes()).Msg("Sending packet to relayer")
 		outgoing <- pcap.Packet{
