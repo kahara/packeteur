@@ -30,17 +30,29 @@ func generateRandomPayload() gopacket.Payload {
 }
 
 func generateRandomEthernetLayer() []gopacket.SerializableLayer {
-	var l []gopacket.SerializableLayer
+	var (
+		l            []gopacket.SerializableLayer
+		encapsulated = toss(generateRandomIPv4Layer, generateRandomIPv6Layer)
+	)
 
 	l = append(l, &layers.Ethernet{
-		BaseLayer:    layers.BaseLayer{},
-		SrcMAC:       nil,
-		DstMAC:       layers.EthernetBroadcast,
-		EthernetType: 0,
-		Length:       0,
+		BaseLayer: layers.BaseLayer{},
+		SrcMAC:    nil,
+		DstMAC:    layers.EthernetBroadcast,
+		EthernetType: func(x gopacket.SerializableLayer) layers.EthernetType {
+			switch x.LayerType() {
+			case layers.LayerTypeIPv4:
+				return layers.EthernetTypeIPv4
+			case layers.LayerTypeIPv6:
+				return layers.EthernetTypeIPv6
+			default:
+				return layers.EthernetTypeLLC
+			}
+		}(encapsulated[0]),
+		Length: 0,
 	})
 
-	l = append(l, toss(generateRandomIPv4Layer, generateRandomIPv6Layer)...)
+	l = append(l, encapsulated...)
 
 	return l
 }
