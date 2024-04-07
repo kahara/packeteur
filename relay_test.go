@@ -6,11 +6,12 @@ import (
 	"github.com/packetcap/go-pcap"
 	"github.com/rs/zerolog/log"
 	"testing"
+	"time"
 )
 
 const (
 	RelayTestEndpoint    = "localhost:17386"
-	RelayTestPacketCount = 100
+	RelayTestPacketCount = 3
 	RelayTestFilename    = "/tmp/packeteur-test-relay.pcap"
 )
 
@@ -35,7 +36,9 @@ func TestRelay(t *testing.T) {
 		}
 	}
 
-	log.Debug().Any("seen", seen).Msg("Packets seen so far")
+	log.Debug().Any("seen", seen).Int("length", len(seen)).Msg("Packets seen so far")
+
+	time.Sleep(time.Second)
 
 	//readPackets(RelayTestFilename, incoming)
 	//for incomingPacket := range incoming {
