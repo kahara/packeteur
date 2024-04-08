@@ -19,14 +19,17 @@ func toss(x ...func() []gopacket.SerializableLayer) []gopacket.SerializableLayer
 func generateRandomPacket() gopacket.SerializeBuffer {
 	var (
 		buf  = gopacket.NewSerializeBuffer()
-		opts = gopacket.SerializeOptions{}
-		l    = generateRandomEthernetLayer()
+		opts = gopacket.SerializeOptions{
+			FixLengths:       true,
+			ComputeChecksums: true,
+		}
+		l = generateRandomEthernetLayer()
 	)
 
 	log.Debug().Any("layers", l).Msg("Layers generated")
-	for c, layer := range l {
-		log.Debug().Int("c", c).Any("layertype", layer.LayerType().String()).Any("l", layer).Msg("layer")
-	}
+	//for c, layer := range l {
+	//	log.Debug().Int("c", c).Any("layertype", layer.LayerType().String()).Any("l", layer).Msg("layer")
+	//}
 
 	_ = gopacket.SerializeLayers(buf, opts, l...)
 
@@ -40,7 +43,7 @@ func generateRandomPayload() gopacket.Payload {
 }
 
 func generateRandomHardwareAddress() []byte {
-	var address = make([]byte, 4)
+	var address = make([]byte, 6)
 	crand.Read(address)
 	return address
 }
@@ -108,7 +111,7 @@ func generateRandomIPv4Layer() []gopacket.SerializableLayer {
 		Id:         0,
 		Flags:      0,
 		FragOffset: 0,
-		TTL:        0,
+		TTL:        uint8(rand.Intn(64)),
 		Protocol: func(x gopacket.SerializableLayer) layers.IPProtocol {
 			switch x.LayerType() {
 			case layers.LayerTypeICMPv4:
