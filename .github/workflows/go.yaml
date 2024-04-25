@@ -21,7 +21,7 @@ jobs:
       - name: Install and initialize dependencies
         run: go get .
       - name: Unit test
-        run: go test -v .
+        run: go test -v . | grep -v '"level":"debug"'
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
