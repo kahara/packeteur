@@ -2,7 +2,6 @@ package main
 
 import (
 	crand "crypto/rand"
-	"encoding/binary"
 	"fmt"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
@@ -68,12 +67,6 @@ func generateRandomPort() uint16 {
 	return uint16(rand.Intn(65536))
 }
 
-func generateRandomFlowLabel() uint32 {
-	var flowLabel = make([]byte, 4)
-	crand.Read(flowLabel)
-	return 0xFFFFF & binary.BigEndian.Uint32(flowLabel)
-}
-
 func generateRandomEthernetLayer() []gopacket.SerializableLayer {
 	var (
 		l            []gopacket.SerializableLayer
@@ -124,13 +117,13 @@ func generateRandomIPv4Layer() []gopacket.SerializableLayer {
 
 	l = append(l, &layers.IPv4{
 		BaseLayer:  layers.BaseLayer{},
-		Version:    4,
-		IHL:        0,
-		TOS:        0,
-		Id:         0,
-		Flags:      0,
-		FragOffset: 0,
-		TTL:        uint8(rand.Intn(64)),
+		Version:    uint8(rand.Intn(256)),
+		IHL:        uint8(rand.Intn(256)),
+		TOS:        uint8(rand.Intn(256)),
+		Id:         uint16(rand.Intn(65536)),
+		Flags:      layers.IPv4Flag(uint16(rand.Intn(65536))),
+		FragOffset: uint16(rand.Intn(65536)),
+		TTL:        uint8(rand.Intn(256)),
 		Protocol: func(x gopacket.SerializableLayer) layers.IPProtocol {
 			switch x.LayerType() {
 			case layers.LayerTypeICMPv4:
@@ -165,7 +158,7 @@ func generateRandomIPv6Layer() []gopacket.SerializableLayer {
 		BaseLayer:    layers.BaseLayer{},
 		Version:      6,
 		TrafficClass: 0,
-		FlowLabel:    generateRandomFlowLabel(),
+		FlowLabel:    0xFFFFF & uint32(rand.Intn(4294967296)),
 		NextHeader:   layers.IPProtocolNoNextHeader,
 		HopLimit:     uint8(rand.Intn(64)),
 		SrcIP:        generateRandomIPAddress("ipv6"),
@@ -230,21 +223,21 @@ func generateRandomTCPLayer() []gopacket.SerializableLayer {
 		BaseLayer:  layers.BaseLayer{},
 		SrcPort:    layers.TCPPort(generateRandomPort()),
 		DstPort:    layers.TCPPort(generateRandomPort()),
-		Seq:        0,
-		Ack:        0,
-		DataOffset: 0,
-		FIN:        false,
-		SYN:        false,
-		RST:        false,
-		PSH:        false,
-		ACK:        false,
-		URG:        false,
-		ECE:        false,
-		CWR:        false,
-		NS:         false,
-		Window:     0,
-		Checksum:   0,
-		Urgent:     0,
+		Seq:        uint32(rand.Intn(4294967296)),
+		Ack:        uint32(rand.Intn(4294967296)),
+		DataOffset: uint8(rand.Intn(256)),
+		FIN:        rand.Intn(2) == 0,
+		SYN:        rand.Intn(2) == 0,
+		RST:        rand.Intn(2) == 0,
+		PSH:        rand.Intn(2) == 0,
+		ACK:        rand.Intn(2) == 0,
+		URG:        rand.Intn(2) == 0,
+		ECE:        rand.Intn(2) == 0,
+		CWR:        rand.Intn(2) == 0,
+		NS:         rand.Intn(2) == 0,
+		Window:     uint16(rand.Intn(65536)),
+		Checksum:   uint16(rand.Intn(65536)),
+		Urgent:     uint16(rand.Intn(65536)),
 		Options:    nil,
 		Padding:    nil,
 	})
