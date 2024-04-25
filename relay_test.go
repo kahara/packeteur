@@ -6,20 +6,19 @@ import (
 	"github.com/packetcap/go-pcap"
 	"github.com/rs/zerolog/log"
 	"testing"
-	"time"
 )
 
 const (
 	RelayTestEndpoint    = "localhost:17386"
-	RelayTestPacketCount = 3
+	RelayTestPacketCount = 10
 	RelayTestFilename    = "/tmp/packeteur-test-relay.pcap"
 )
 
 func TestRelay(t *testing.T) {
 	var (
-		outgoing = make(chan pcap.Packet, 1024)
+		outgoing = make(chan pcap.Packet, 1000)
 		seen     = make(map[uint64]bool)
-		incoming = make(chan []byte, 1024)
+		incoming = make(chan []byte, 1000)
 	)
 
 	go relay(outgoing, RelayTestEndpoint)
@@ -36,12 +35,23 @@ func TestRelay(t *testing.T) {
 		}
 	}
 
-	log.Debug().Any("seen", seen).Int("length", len(seen)).Msg("Packets seen so far")
+	count := RelayTestPacketCount
+	for incomingPacket := range incoming {
+		log.Debug().Bytes("packet", incomingPacket).Msg("Received packet from collector")
 
-	time.Sleep(time.Second)
+		// Verify collector isn't sending anything extraneous
+		count--
+		if count < 0 {
+			t.Errorf("Too many packets seen, expected %d count", RelayTestPacketCount)
+		}
 
-	//readPackets(RelayTestFilename, incoming)
-	//for incomingPacket := range incoming {
-	//	log.Debug().Bytes("packet", incomingPacket).Msg("Received packet from collector")
-	//}
+		// Verify all the packets that went out made the round-trip intact
+		h := xxhash.Sum64(incomingPacket)
+		if seen[h] {
+			delete(seen, h)
+		}
+		if len(seen) == 0 {
+			break
+		}
+	}
 }
