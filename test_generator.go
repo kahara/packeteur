@@ -2,6 +2,7 @@ package main
 
 import (
 	crand "crypto/rand"
+	"encoding/binary"
 	"fmt"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
@@ -67,6 +68,12 @@ func generateRandomPort() uint16 {
 	return uint16(rand.Intn(65536))
 }
 
+func generateRandomFlowLabel() uint32 {
+	var flowLabel = make([]byte, 4)
+	crand.Read(flowLabel)
+	return 0xFFFFF & binary.BigEndian.Uint32(flowLabel)
+}
+
 func generateRandomEthernetLayer() []gopacket.SerializableLayer {
 	var (
 		l            []gopacket.SerializableLayer
@@ -92,8 +99,9 @@ func generateRandomEthernetLayer() []gopacket.SerializableLayer {
 
 	l = append(l, encapsulated...)
 
+	// Marry IP payloads
 	for i, x := range l {
-		log.Debug().Int("index", i).Any("type", x.LayerType().String()).Any("layer", x).Msg("dumping layers")
+		//log.Debug().Int("index", i).Any("type", x.LayerType().String()).Any("layer", x).Msg("dumping layers")
 		switch x.LayerType() {
 		case layers.LayerTypeICMPv6:
 			x.(*layers.ICMPv6).SetNetworkLayerForChecksum(l[i-1].(gopacket.NetworkLayer))
@@ -157,12 +165,12 @@ func generateRandomIPv6Layer() []gopacket.SerializableLayer {
 		BaseLayer:    layers.BaseLayer{},
 		Version:      6,
 		TrafficClass: 0,
-		FlowLabel:    0,
-		NextHeader:   0,
-		HopLimit:     0,
+		FlowLabel:    generateRandomFlowLabel(),
+		NextHeader:   layers.IPProtocolNoNextHeader,
+		HopLimit:     uint8(rand.Intn(64)),
 		SrcIP:        generateRandomIPAddress("ipv6"),
 		DstIP:        generateRandomIPAddress("ipv6"),
-		HopByHop:     nil,
+		//HopByHop: nil,
 	})
 
 	l = append(l, encapsulated...)
@@ -175,10 +183,9 @@ func generateRandomICMPv4Layer() []gopacket.SerializableLayer {
 
 	l = append(l, &layers.ICMPv4{
 		BaseLayer: layers.BaseLayer{},
-		TypeCode:  0,
-		Checksum:  0,
-		Id:        0,
-		Seq:       0,
+		TypeCode:  layers.ICMPv4TypeCode(uint16(rand.Intn(65536))),
+		Id:        uint16(rand.Intn(65536)),
+		Seq:       uint16(rand.Intn(65536)),
 	})
 
 	return l
@@ -189,9 +196,7 @@ func generateRandomICMPv6Layer() []gopacket.SerializableLayer {
 
 	l = append(l, &layers.ICMPv6{
 		BaseLayer: layers.BaseLayer{},
-		TypeCode:  0,
-		Checksum:  0,
-		TypeBytes: nil,
+		TypeCode:  layers.ICMPv6TypeCode(uint16(rand.Intn(65536))),
 	})
 
 	return l
