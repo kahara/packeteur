@@ -27,11 +27,10 @@ func generateRandomPacket() gopacket.SerializeBuffer {
 	)
 
 	log.Debug().Any("layers", l).Msg("Layers generated")
-	//for c, layer := range l {
-	//	log.Debug().Int("c", c).Any("layertype", layer.LayerType().String()).Any("l", layer).Msg("layer")
-	//}
 
-	_ = gopacket.SerializeLayers(buf, opts, l...)
+	if err := gopacket.SerializeLayers(buf, opts, l...); err != nil {
+		log.Err(err).Msg("SerializeLayers")
+	}
 
 	return buf
 }
@@ -57,7 +56,7 @@ func generateRandomIPAddress(kind string) []byte {
 	case "ipv6":
 		address = make([]byte, 16)
 	default:
-		panic(fmt.Sprintf("I don't know how to come up with an IP address if kind %s", kind))
+		panic(fmt.Sprintf("I don't know how to come up with an IP address of kind %s", kind))
 	}
 
 	crand.Read(address)
@@ -85,14 +84,27 @@ func generateRandomEthernetLayer() []gopacket.SerializableLayer {
 			case layers.LayerTypeIPv6:
 				return layers.EthernetTypeIPv6
 			default:
+				log.Debug().Any("type", x.LayerType().String()).Msg("unknown layer type")
 				return layers.EthernetTypeLLC
 			}
 		}(encapsulated[0]),
-		Length: 0,
 	})
 
 	l = append(l, encapsulated...)
 
+	for i, x := range l {
+		log.Debug().Int("index", i).Any("type", x.LayerType().String()).Any("layer", x).Msg("dumping layers")
+		switch x.LayerType() {
+		case layers.LayerTypeICMPv6:
+			x.(*layers.ICMPv6).SetNetworkLayerForChecksum(l[i-1].(gopacket.NetworkLayer))
+		case layers.LayerTypeUDP:
+			x.(*layers.UDP).SetNetworkLayerForChecksum(l[i-1].(gopacket.NetworkLayer))
+		case layers.LayerTypeTCP:
+			x.(*layers.TCP).SetNetworkLayerForChecksum(l[i-1].(gopacket.NetworkLayer))
+		default:
+			continue
+		}
+	}
 	return l
 }
 
@@ -107,7 +119,6 @@ func generateRandomIPv4Layer() []gopacket.SerializableLayer {
 		Version:    4,
 		IHL:        0,
 		TOS:        0,
-		Length:     0,
 		Id:         0,
 		Flags:      0,
 		FragOffset: 0,
@@ -147,7 +158,6 @@ func generateRandomIPv6Layer() []gopacket.SerializableLayer {
 		Version:      6,
 		TrafficClass: 0,
 		FlowLabel:    0,
-		Length:       0,
 		NextHeader:   0,
 		HopLimit:     0,
 		SrcIP:        generateRandomIPAddress("ipv6"),
@@ -197,7 +207,6 @@ func generateRandomUDPLayer() []gopacket.SerializableLayer {
 		BaseLayer: layers.BaseLayer{},
 		SrcPort:   layers.UDPPort(generateRandomPort()),
 		DstPort:   layers.UDPPort(generateRandomPort()),
-		Length:    uint16(len(encapsulated.Payload())),
 		Checksum:  0,
 	})
 
