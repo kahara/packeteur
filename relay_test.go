@@ -5,12 +5,14 @@ import (
 	"github.com/google/gopacket"
 	"github.com/packetcap/go-pcap"
 	"github.com/rs/zerolog/log"
+	"math/rand"
 	"testing"
+	"time"
 )
 
 const (
 	RelayTestEndpoint    = "localhost:17386"
-	RelayTestPacketCount = 10
+	RelayTestPacketCount = 10000
 	RelayTestFilename    = "/tmp/packeteur-test-relay.pcap"
 )
 
@@ -28,11 +30,14 @@ func TestRelay(t *testing.T) {
 		outgoingPacket := generateRandomPacket()
 		seen[xxhash.Sum64(outgoingPacket.Bytes())] = true
 		log.Debug().Bytes("packet", outgoingPacket.Bytes()).Msg("Sending packet to relayer")
-		outgoing <- pcap.Packet{
+		select {
+		case outgoing <- pcap.Packet{
 			B:     outgoingPacket.Bytes(),
 			Info:  gopacket.CaptureInfo{},
 			Error: nil,
+		}:
 		}
+		time.Sleep(time.Duration(rand.Intn(10)) * time.Microsecond)
 	}
 
 	count := RelayTestPacketCount
@@ -41,6 +46,7 @@ func TestRelay(t *testing.T) {
 
 		// Verify collector isn't sending anything extraneous
 		count--
+		log.Debug().Int("count", count).Msg("incoming packet count")
 		if count < 0 {
 			t.Errorf("Too many packets seen, expected %d count", RelayTestPacketCount)
 		}
