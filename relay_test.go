@@ -46,7 +46,6 @@ func TestRelay(t *testing.T) {
 
 		// Verify collector isn't sending anything extraneous
 		count--
-		log.Debug().Int("count", count).Msg("incoming packet count")
 		if count < 0 {
 			t.Errorf("Too many packets seen, expected %d count", RelayTestPacketCount)
 		}
